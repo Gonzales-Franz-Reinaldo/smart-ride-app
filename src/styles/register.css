@@ -1,0 +1,262 @@
+/* ----- Layout general de la página de registro ----- */
+
+.register-page {
+  min-height: 100vh;
+  width: 100%;                  /* 🔹 MUY IMPORTANTE */
+  background: #edf2f7;          /* fondo claro en toda la pantalla */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header superior */
+
+.register-header {
+  padding: 10px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.register-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.register-logo-mini {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #0ea5e9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #ffffff;
+}
+
+.register-header-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.register-header-sub {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.register-header-right {
+  font-size: 0.8rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.register-btn-ghost {
+  border-radius: 999px;
+  border: 1px solid #cbd5f5;
+  background: #111827;
+  color: #f9fafb;
+  padding: 5px 14px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+/* Contenido principal */
+
+.register-main {
+  flex: 1;
+  width: 100%;                 /* 🔹 ocupa todo el ancho */
+  display: flex;
+  align-items: center;         /* centra también verticalmente (si quieres) */
+  justify-content: center;     /* centra horizontalmente la card */
+  padding: 24px;
+}
+
+/* usa más ancho de pantalla */
+.register-card {
+  width: 100%;
+  max-width: 960px;            /* o 1100/1200 si quieres más ancha */
+  background: #ffffff;
+  border-radius: 22px;
+  padding: 24px 28px 24px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+
+/* Título */
+
+.register-card-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.register-card-subtitle {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+/* ----- Switch pasajero / conductor ----- */
+
+.sr-role-switch {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  padding: 3px;
+  background: #ffffff;
+  margin-bottom: 16px;
+}
+
+.sr-role-option {
+  padding: 6px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  border: none;
+  background: transparent;
+  color: #4b5563;
+  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.sr-role-option.active {
+  background: linear-gradient(135deg, #22c55e, #0ea5e9);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.4);
+}
+
+/* ----- Formulario ----- */
+
+.sr-form {
+  font-size: 0.82rem;
+}
+
+.sr-section-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.sr-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+@media (max-width: 700px) {
+  .sr-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sr-label {
+  display: block;
+  margin-bottom: 2px;
+  color: #111827;
+  font-size: 0.78rem;
+}
+
+.sr-input,
+.sr-select {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+
+.sr-input::placeholder {
+  color: #9ca3af;
+}
+
+.sr-field-full {
+  grid-column: 1 / -1;
+}
+
+/* Línea divisoria */
+
+.sr-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 14px 0;
+}
+
+/* Botón principal */
+
+.sr-btn-primary {
+  margin-top: 4px;
+  width: 100%;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #22c55e, #0ea5e9);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.45);
+}
+
+.sr-btn-primary:hover {
+  filter: brightness(1.04);
+}
+
+.sr-small-link {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+.sr-small-link a {
+  color: #0ea5e9;
+  text-decoration: none;
+}
+
+.sr-small-link a:hover {
+  text-decoration: underline;
+}
+
+/* Texto de ayuda */
+
+.sr-hint {
+  font-size: 0.76rem;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Texto de rol seleccionado */
+
+.sr-role-info {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 8px;
+}
+
+.sr-btn-row {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sr-btn-secondary {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
