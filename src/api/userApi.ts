@@ -117,9 +117,25 @@ export async function fetchAllDrivers(token: string): Promise<DriverProfile[]> {
     throw new Error(msg);
   }
 
-  const list = data?.data ?? data;
-  return list as DriverProfile[];
+  // Tu backend responde algo así:
+  // { success: true, data: [ {...}, {...} ], total: 1, ... }
+  const raw = data?.data ?? data;
+
+  // Caso normal: data.data es un array
+  if (Array.isArray(raw)) {
+    return raw as DriverProfile[];
+  }
+
+  // Por si algún día tu backend envía { data: { data: [...], total: ... } }
+  if (raw && Array.isArray((raw as any).data)) {
+    return (raw as any).data as DriverProfile[];
+  }
+
+  console.log('fetchAllDrivers: estructura inesperada', data);
+  return [];
 }
+
+
 
 // 🔹 Crear usuario con rol CONDUCTOR (solo usuario)
 export async function createConductorUser(
@@ -191,3 +207,32 @@ export async function createDriverProfile(
   return data;
 }
 
+// Cambia el estado del conductor (activo / inactivo)
+export async function cambiarEstadoConductor(
+  conductorId: number,
+  nuevoEstado: string, // 'disponible' | 'inactivo' | etc.
+  token: string,
+): Promise<DriverProfile> {
+  const res = await fetch(
+    // ⚠️ PON AQUÍ EXACTAMENTE TU ENDPOINT QUE YA PROBASTE EN POSTMAN
+    `${AUTH_BASE_URL}/users/conductores/${conductorId}/estado`,
+    {
+      method: 'PATCH', // o el método que uses en tu backend
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        estado_conductor: nuevoEstado,
+      }),
+    },
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('Error al cambiar estado:', text);
+    throw new Error('No se pudo cambiar el estado del conductor');
+  }
+
+  return (await res.json()) as DriverProfile;
+}
