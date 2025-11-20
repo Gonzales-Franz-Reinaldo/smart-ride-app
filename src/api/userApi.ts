@@ -1,79 +1,193 @@
-const USERS_API_URL = import.meta.env.VITE_USERS_API_URL;
+// src/api/userApi.ts
+import type { User, DriverProfile } from '../types/user';
 
-if (!USERS_API_URL) {
-  console.error('Falta VITE_USERS_API_URL en el .env');
+export type UserRole = 'admin' | 'pasajero' | 'conductor';
+
+export interface UserFromApi extends User {
+  access_token?: string;
+  refresh_token?: string;
+  [key: string]: any;
 }
 
-async function request(path: string, options: RequestInit) {
-  const resp = await fetch(`${USERS_API_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+const AUTH_BASE_URL =
+  import.meta.env.VITE_AUTH_API_URL ?? 'http://localhost/api/v1';
 
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(text || `Error HTTP ${resp.status}`);
-  }
-
-  if (resp.status === 204) return null;
-  return resp.json();
-}
-
-export type RolUsuario = 'pasajero' | 'conductor' | 'admin';
-
-export interface CreateUserDto {
-  nombre: string;
-  apellido: string;
-  email: string;
-  telefono: string;
-  password: string;
-  fecha_nacimiento?: string;
-  genero?: string;
-  rol: RolUsuario;
-}
-
-export interface User {
-  id_usuario: number;
-  nombre: string;
-  apellido: string;
-  email: string;
-  telefono: string;
-  rol: RolUsuario;
-}
-
-export interface CreateDriverDto {
-  id_usuario: number;
-  numero_licencia: string;
-  tipo_licencia: string;
-  fecha_vencimiento_licencia: string;
-  marca_auto: string;
-  modelo_auto: string;
-  placa_auto: string;
-}
-
-// POST /users
-export async function createUser(data: CreateUserDto): Promise<User> {
-  return request('/users', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-// POST /users/conductores
-export async function createDriverProfile(data: CreateDriverDto) {
-  return request('/users/conductores', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-// POST /auth/login  ← ajusta el path si tu backend usa otro
+// ====================== LOGIN ======================
 export async function loginUser(email: string, password: string) {
-  return request('/auth/login', {
+  const res = await fetch(`${AUTH_BASE_URL}/auth/login`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
+
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('No se pudo leer la respuesta del servidor');
+  }
+
+  if (!res.ok) {
+    const msg =
+      data?.message ??
+      'Error al iniciar sesión (respuesta no exitosa del servidor).';
+    throw new Error(msg);
+  }
+
+  const payload = data?.data ?? data;
+
+  if (!payload || !payload.access_token || !payload.rol) {
+    console.error('Estructura de login inesperada:', data);
+    throw new Error('Respuesta de login inesperada del servidor');
+  }
+
+  return {
+    token: payload.access_token as string,
+    user: payload as UserFromApi,
+  };
 }
+
+// ================== REGISTRO PASAJERO ==================
+export async function registerPassenger(dto: {
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
+  password: string;
+}) {
+  const res = await fetch(`${AUTH_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dto),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg =
+      data?.message ?? 'Error al registrar pasajero (respuesta no exitosa).';
+    throw new Error(msg);
+  }
+
+  return data;
+}
+
+// ================ LISTAR USUARIOS (ADMIN) ================
+export async function fetchAllUsers(token: string): Promise<User[]> {
+  const res = await fetch(`${AUTH_BASE_URL}/users`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg =
+      data?.message ?? 'Error al obtener usuarios desde el backend.';
+    throw new Error(msg);
+  }
+
+  // Tu backend responde { success: true, data: [...] }
+  const list = data?.data ?? data;
+  return (list as any[]).map(u => ({
+    id_usuario: u.id_usuario,
+    nombre: u.nombre,
+    apellido: u.apellido,
+    email: u.email,
+    telefono: u.telefono ?? null,
+    rol: u.rol,
+    estado_cuenta: u.estado_cuenta ?? null,
+  }));
+}
+
+// ============== LISTAR CONDUCTORES (ADMIN) ==============
+export async function fetchAllDrivers(token: string): Promise<DriverProfile[]> {
+  const res = await fetch(`${AUTH_BASE_URL}/users/conductores/all`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg =
+      data?.message ?? 'Error al obtener conductores desde el backend.';
+    throw new Error(msg);
+  }
+
+  const list = data?.data ?? data;
+  return list as DriverProfile[];
+}
+
+// 🔹 Crear usuario con rol CONDUCTOR (solo usuario)
+export async function createConductorUser(
+  payload: {
+    nombre: string;
+    apellido: string;
+    email: string;
+    telefono?: string;
+    password: string;
+  },
+  token: string
+) {
+  const res = await fetch(`${AUTH_BASE_URL}/users`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      ...payload,
+      rol: 'conductor',
+      // si luego tu backend exige fecha_nacimiento / genero, los agregas aquí
+    }),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg =
+      data?.message ?? 'Error al crear el usuario conductor.';
+    throw new Error(msg);
+  }
+
+  // devolvemos la respuesta tal cual la manda el backend
+  return data;
+}
+
+
+// Crea el perfil de conductor usando POST /users/conductores
+export async function createDriverProfile(
+  dto: {
+    id_usuario: number;
+    numero_licencia: string;
+    tipo_licencia: string;
+    fecha_vencimiento_licencia: string;
+    marca_auto: string;
+    modelo_auto: string;
+    placa_auto: string;
+  },
+  token: string
+) {
+  const res = await fetch(`${AUTH_BASE_URL}/users/conductores`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(dto),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg =
+      data?.message ?? 'Error al crear perfil de conductor.';
+    throw new Error(msg);
+  }
+
+  return data;
+}
+

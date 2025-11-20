@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import RegisterPage from '../pages/auth/RegisterPage';
 import LoginPage from '../pages/auth/LoginPage';
+import AdminPage from '../pages/admin/AdminPage';
 
 // Páginas muy simples por ahora (las puedes mover a archivos separados luego)
 const PassengerHome: React.FC = () => (
@@ -18,12 +19,12 @@ const DriverDashboard: React.FC = () => (
   </div>
 );
 
-const AdminDashboard: React.FC = () => (
+/* const AdminDashboard: React.FC = () => (
   <div className="p-6">
     <h1 className="text-2xl font-semibold mb-2">Panel de Administrador</h1>
     <p>Aquí irán las vistas de administración general del sistema.</p>
   </div>
-);
+); */
 
 const AppRouter: React.FC = () => {
   return (
@@ -36,10 +37,13 @@ const AppRouter: React.FC = () => {
         {/* Paneles por rol */}
         <Route path="/pasajero" element={<PassengerHome />} />
         <Route path="/conductor" element={<DriverDashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+       {/*  <Route path="/admin" element={<AdminDashboard />} /> */}
 
         {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+
+        
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,216 +1,166 @@
-import React, { useState, type FormEvent } from 'react';
+// src/components/forms/UserRegisterForm.tsx
+import { type FormEvent, useState } from 'react';
+import { registerPassenger } from '../../api/userApi';
 
-export interface UserRegisterFormValues {
+interface FormValues {
   nombre: string;
   apellido: string;
   email: string;
   telefono: string;
   password: string;
-  fecha_nacimiento: string;
-  genero: string;
-  rol: 'pasajero' | 'conductor';
+  genero: string;           // solo UI, NO se envía
+  fechaNacimiento: string;  // solo UI, NO se envía
 }
 
-interface UserRegisterFormProps {
-  onSubmit?: (values: UserRegisterFormValues) => void;
-}
-
-const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSubmit }) => {
-  const [formValues, setFormValues] = useState<UserRegisterFormValues>({
+const UserRegisterForm = () => {
+  const [formValues, setFormValues] = useState<FormValues>({
     nombre: '',
     apellido: '',
     email: '',
     telefono: '',
     password: '',
-    fecha_nacimiento: '',
-    genero: 'masculino',
-    rol: 'pasajero',
+    genero: 'Masculino',
+    fechaNacimiento: '',
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Si quieres mostrar algún mensaje bonito luego, puedes usarlo
+  // const [success, setSuccess] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormValues(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormValues(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    onSubmit?.(formValues);
-  };
+    setError(null);
+    setLoading(true);
 
-  const isConductor = formValues.rol === 'conductor';
+    try {
+      await registerPassenger({
+        nombre: formValues.nombre,
+        apellido: formValues.apellido,
+        email: formValues.email,
+        telefono: formValues.telefono,
+        password: formValues.password,
+      });
+
+      // Si llegó aquí, se creó el pasajero
+      // setSuccess('Cuenta creada correctamente. Ahora puedes iniciar sesión.');
+      window.location.href = '/login';
+    } catch (err: any) {
+      console.error('Error al registrar pasajero:', err);
+      setError(err.message ?? 'Error al registrar pasajero.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form className="sr-form" onSubmit={handleSubmit}>
-      {/* Switch pasajero / conductor */}
-      <div className="sr-role-switch">
-        <button
-          type="button"
-          className={`sr-role-option ${
-            formValues.rol === 'pasajero' ? 'active' : ''
-          }`}
-          onClick={() =>
-            setFormValues(prev => ({ ...prev, rol: 'pasajero' }))
-          }
-        >
-          Soy pasajero
-        </button>
-        <button
-          type="button"
-          className={`sr-role-option ${
-            formValues.rol === 'conductor' ? 'active' : ''
-          }`}
-          onClick={() =>
-            setFormValues(prev => ({ ...prev, rol: 'conductor' }))
-          }
-        >
-          Soy conductor
-        </button>
-      </div>
+    <form onSubmit={handleSubmit} className="sr-form">
+      {error && (
+        <p className="mt-2 text-sm text-red-600 break-words">{error}</p>
+      )}
 
-      <p className="sr-hint">
-        Primero registramos tus datos personales. Si eliges{' '}
-        <strong>conductor</strong>, después se completan los datos del vehículo.
+      <p className="text-sm text-slate-500 mb-3">
+        Primero registramos tus datos personales. Este formulario crea
+        una cuenta de <span className="font-semibold">pasajero</span>.
       </p>
 
-      {/* Datos personales */}
-      <div style={{ marginTop: 16 }}>
-        <h2 className="sr-section-title">Datos personales</h2>
+      <div className="sr-form-grid">
+        <div>
+          <label className="sr-label" htmlFor="nombre">
+            Nombre
+          </label>
+          <input
+            id="nombre"
+            name="nombre"
+            value={formValues.nombre}
+            onChange={handleChange}
+            className="sr-input"
+            placeholder="Nombre"
+            required
+          />
+        </div>
 
-        <div className="sr-form-grid">
-          <div>
-            <label className="sr-label" htmlFor="nombre">
-              Nombre
-            </label>
-            <input
-              id="nombre"
-              name="nombre"
-              type="text"
-              className="sr-input"
-              placeholder="Nombre"
-              value={formValues.nombre}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        <div>
+          <label className="sr-label" htmlFor="apellido">
+            Apellido
+          </label>
+          <input
+            id="apellido"
+            name="apellido"
+            value={formValues.apellido}
+            onChange={handleChange}
+            className="sr-input"
+            placeholder="Apellido"
+            required
+          />
+        </div>
 
-          <div>
-            <label className="sr-label" htmlFor="apellido">
-              Apellido
-            </label>
-            <input
-              id="apellido"
-              name="apellido"
-              type="text"
-              className="sr-input"
-              placeholder="Apellido"
-              value={formValues.apellido}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        <div>
+          <label className="sr-label" htmlFor="email">
+            Correo electrónico
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={formValues.email}
+            onChange={handleChange}
+            className="sr-input"
+            placeholder="tucorreo@ejemplo.com"
+            required
+          />
+        </div>
 
-          <div>
-            <label className="sr-label" htmlFor="email">
-              Correo electrónico
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              className="sr-input"
-              placeholder="tucorreo@ejemplo.com"
-              value={formValues.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        <div>
+          <label className="sr-label" htmlFor="telefono">
+            Teléfono
+          </label>
+          <input
+            id="telefono"
+            name="telefono"
+            value={formValues.telefono}
+            onChange={handleChange}
+            className="sr-input"
+            placeholder="+591 7xxxxxxx"
+          />
+        </div>
 
-          <div>
-            <label className="sr-label" htmlFor="telefono">
-              Teléfono
-            </label>
-            <input
-              id="telefono"
-              name="telefono"
-              type="tel"
-              className="sr-input"
-              placeholder="+591 7xxxxxxx"
-              value={formValues.telefono}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="sr-label" htmlFor="password">
-              Contraseña
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              className="sr-input"
-              placeholder="Mínimo 8 caracteres"
-              value={formValues.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="sr-label" htmlFor="fecha_nacimiento">
-              Fecha de nacimiento
-            </label>
-            <input
-              id="fecha_nacimiento"
-              name="fecha_nacimiento"
-              type="date"
-              className="sr-input"
-              value={formValues.fecha_nacimiento}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label className="sr-label" htmlFor="genero">
-              Género
-            </label>
-            <select
-              id="genero"
-              name="genero"
-              className="sr-select"
-              value={formValues.genero}
-              onChange={handleChange}
-            >
-              <option value="masculino">Masculino</option>
-              <option value="femenino">Femenino</option>
-              <option value="otro">Otro</option>
-              <option value="prefiero_no_decir">Prefiero no decir</option>
-            </select>
-          </div>
-
-          <div className="sr-field-full">
-            <p className="sr-role-info">
-              Rol seleccionado: <strong>{isConductor ? 'Conductor' : 'Pasajero'}</strong>
-            </p>
-          </div>
+        <div>
+          <label className="sr-label" htmlFor="password">
+            Contraseña
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            value={formValues.password}
+            onChange={handleChange}
+            className="sr-input"
+            placeholder="Mínimo 8 caracteres"
+            required
+          />
         </div>
       </div>
 
-      <hr className="sr-divider" />
-
-      <button type="submit" className="sr-btn-primary">
-        Continuar
-      </button>
-
-      <p className="sr-small-link">
-        ¿Ya tienes cuenta? <a href="#">Inicia sesión aquí.</a>
+      <p className="text-xs text-slate-500 mt-2">
+        Rol seleccionado: <span className="font-semibold">Pasajero</span>
       </p>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="sr-btn-primary mt-4"
+      >
+        {loading ? 'Creando cuenta…' : 'Continuar'}
+      </button>
     </form>
   );
 };
