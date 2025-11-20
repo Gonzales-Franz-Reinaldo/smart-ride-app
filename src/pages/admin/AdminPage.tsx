@@ -519,22 +519,23 @@ const DriversTable: React.FC<DriversTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {drivers.map(d => (
-              <tr key={d.id_conductor}>
-                <td>
-                  {d.usuario?.nombre} {d.usuario?.apellido}
-                </td>
-                <td>{d.usuario?.email}</td>
-                <td>{d.numero_licencia}</td>
-                <td>{d.tipo_licencia}</td>
-                <td>{d.placa_auto}</td>
-                <td className="capitalize">
-                  {d.estado_conductor}
-                </td>
-              </tr>
-            ))}
+            {Array.isArray(drivers) &&
+              drivers.map(d => (
+                <tr key={d.id_conductor}>
+                  <td>
+                    {d.usuario?.nombre} {d.usuario?.apellido}
+                  </td>
+                  <td>{d.usuario?.email}</td>
+                  <td>{d.numero_licencia}</td>
+                  <td>{d.tipo_licencia}</td>
+                  <td>{d.placa_auto}</td>
+                  <td className="capitalize">
+                    {d.estado_conductor}
+                  </td>
+                </tr>
+              ))}
 
-            {drivers.length === 0 && (
+            {(!Array.isArray(drivers) || drivers.length === 0) && (
               <tr>
                 <td
                   className="admin-table-empty"
